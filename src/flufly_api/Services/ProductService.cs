@@ -21,13 +21,22 @@ namespace FNCPLT.API.Service
 			ICacheService cache,
 			IOptions<ProcessAPIApplicationConfiguration> config = null) : base(locator, logger, config, cache)
 		{
-		    this._client = locator.Get(Model.Enum.SERVICE_CLIENTS.FluflyProductService);
+		    _client = locator.Get(Model.Enum.SERVICE_CLIENTS.FluflyProductService);
 		}
 
         public async Task<IServiceResponse<FluflyProductDTO>> GetFluflyProductsAsync(string productCategory, bool isActive) 
 		{
+            string restResponse = null;
+            try 
+            {
+                restResponse = await this._client.GetAsync($"flufly-products?product_category={productCategory}");
+            } 
+            catch (Exception ex)
+            {
+                _logger.LogInformation("The selecteed product category is not available");
+                return null;
+            }
 
-			var restResponse = await this._client.GetAsync($"flufly-products?product_category={productCategory}");
 			var response = await ValidateResponse(restResponse);
 			var responseObject = JsonConvert.DeserealizeObject<ServiceResponse<IEnumerable<FluflyProductDTO>>>(response);
 
